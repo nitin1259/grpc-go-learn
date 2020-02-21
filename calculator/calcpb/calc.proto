@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package calc;
+option go_package="calcpb";
+
+message Calc {
+    int32 num1= 1;
+    int32 num2=2;
+}
+
+message CalcRequest{
+    Calc calcate = 1;
+}
+
+message CalcResponse{
+    int32 result=2;
+}
+
+service CalcService {
+    //Unary 
+    rpc calculator(CalcRequest) returns (CalcResponse){}
+}
+
+
