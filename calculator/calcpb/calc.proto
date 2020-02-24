@@ -16,9 +16,21 @@ message CalcResponse{
     int32 result=2;
 }
 
+message PrimeNumberDecompositionRequest{
+    int64 number =1;
+}
+
+message PrimeNumberDecompositionResponse{
+    int64 result =1;
+}
+
 service CalcService {
     //Unary 
     rpc calculator(CalcRequest) returns (CalcResponse){}
+    
+
+    // server streaming rpc
+    rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest) returns (stream PrimeNumberDecompositionResponse){}
 }
 
 

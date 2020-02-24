@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/nitin1259/grpc-go-learn/calculator/calcpb"
 	"google.golang.org/grpc"
@@ -26,6 +27,27 @@ func (*server) Calculator(ctx context.Context, req *calcpb.CalcRequest) (*calcpb
 	}
 
 	return res, nil
+}
+
+func (*server) PrimeNumberDecomposition(req *calcpb.PrimeNumberDecompositionRequest, stream calcpb.CalcService_PrimeNumberDecompositionServer) error {
+	log.Printf("server streaming rpc to find prime decompsition req: %v \n", req)
+	num := req.GetNumber()
+	k := int64(2)
+	for num > 1 {
+		if num%k == 0 {
+			fmt.Printf("Prime factor %v", k)
+			res := &calcpb.PrimeNumberDecompositionResponse{
+				Result: k,
+			}
+			stream.Send(res)
+			num = num / k
+			time.Sleep(1000 * time.Millisecond)
+		} else {
+			k++
+		}
+	}
+
+	return nil
 }
 
 func main() {

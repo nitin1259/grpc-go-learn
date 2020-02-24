@@ -9,3 +9,18 @@ Test the server code by implementing the Client
 Example:
 
 The client will send two numbers (3 and 10) and the server will respond with (13)
+
+
+--------------
+
+Now it is time for another exercise for server streaming RPC!
+
+In this exercise, your goal is to implement a PrimeNumberDecomposition RPC Server Streaming API in a CalculatorService:
+
+The function takes a Request message that has one integer, and returns a stream of Responses that represent the prime number decomposition of that number (see below for the algorithm).
+Remember to first implement the service definition in a .proto file, alongside the RPC messages
+Implement the Server code first
+Test the server code by implementing the Client
+Example:
+
+The client will send one number (120) and the server will respond with a stream of (2,2,2,3,5), because 120=2*2*2*3*5 
