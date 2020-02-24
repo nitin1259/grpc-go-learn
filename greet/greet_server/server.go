@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"time"
 
 	"github.com/nitin1259/grpc-go-learn/greet/greetpb"
 	"google.golang.org/grpc"
@@ -40,8 +41,8 @@ func (*server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb
 		res := &greetpb.GreetManyTimesResponse{
 			Result: result,
 		}
-
 		stream.Send(res)
+		time.Sleep(1000 * time.Millisecond)
 	}
 
 	return nil

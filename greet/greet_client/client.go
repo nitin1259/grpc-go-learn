@@ -10,6 +10,8 @@ import "github.com/nitin1259/grpc-go-learn/greet/greetpb"
 
 import "context"
 
+import "io"
+
 func main() {
 	fmt.Println("Welcome to grpc go client")
 
@@ -25,7 +27,9 @@ func main() {
 
 	fmt.Printf("Created cleint %f \n", client)
 
-	doUnary(client)
+	// doUnary(client)
+
+	doServerStreamingRPC(client)
 }
 
 func doUnary(client greetpb.GreetServiceClient) {
@@ -44,4 +48,34 @@ func doUnary(client greetpb.GreetServiceClient) {
 	}
 
 	log.Printf("Response from the Greet method res: %v", res)
+}
+
+func doServerStreamingRPC(client greetpb.GreetServiceClient) {
+	fmt.Println("Starting do do Server Streaming from client")
+
+	req := &greetpb.GreetManyTimesRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: "Kapil",
+			LastName:  "Gill",
+		},
+	}
+
+	resStream, err := client.GreetManyTimes(context.Background(), req)
+
+	if err != nil {
+		log.Fatalf("Error while calling GreetingManyTimes RPC: %v", err)
+	}
+
+	for {
+		msg, err := resStream.Recv()
+		if err == io.EOF {
+			// we are done with the stream and reached EOF
+		}
+		if err != nil {
+			log.Fatalf("error while reading stream : %v", err)
+		}
+
+		log.Printf("Response from Greet Many Times %v", msg.GetResult())
+	}
+
 }
