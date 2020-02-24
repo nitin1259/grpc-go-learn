@@ -11,6 +11,8 @@ import "context"
 
 import "io"
 
+import "time"
+
 func main() {
 	fmt.Println("Starting the client main")
 
@@ -22,9 +24,11 @@ func main() {
 
 	client := calcpb.NewCalcServiceClient(clientconn)
 
-	doUnaryRPC(client)
+	// doUnaryRPC(client)
 
-	doServerStreamPrimeDecompsitonRPC(client)
+	// doServerStreamPrimeDecompsitonRPC(client)
+
+	doClientStreamComputeAverageRPC(client)
 
 }
 
@@ -69,5 +73,52 @@ func doServerStreamPrimeDecompsitonRPC(client calcpb.CalcServiceClient) {
 		log.Printf("Response from the calc server %v", msg.GetResult())
 
 	}
+
+}
+
+func doClientStreamComputeAverageRPC(client calcpb.CalcServiceClient) {
+	fmt.Println("client streaming request for Computer Average rpc")
+
+	requests := []*calcpb.ComputeAverageRequest{
+		&calcpb.ComputeAverageRequest{
+			Number: 20,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 21,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 22,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 23,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 24,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 25,
+		},
+	}
+
+	stream, err := client.ComputeAverage(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error while doing Client steaming rpc call : %v", err)
+	}
+
+	for _, req := range requests {
+		fmt.Printf("Sending request from client stream: %v \n", req)
+		stream.Send(req)
+
+		time.Sleep(1000 * time.Millisecond)
+	}
+
+	res, err := stream.CloseAndRecv()
+
+	if err != nil {
+		log.Fatalf("Error while receving response from server: %v", err)
+	}
+
+	log.Printf("Response from client Compute Average res: %v", res.GetResult())
 
 }
