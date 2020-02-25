@@ -190,7 +190,7 @@ func doBiDiStreamingRPC(client greetpb.GreetServiceClient) {
 
 			res, err := stream.Recv()
 			if err == io.EOF {
-				// done with sending response in BiDi
+				// done with receiving response in BiDi
 				close(waitc)
 			}
 			if err != nil {

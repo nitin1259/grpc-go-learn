@@ -28,7 +28,9 @@ func main() {
 
 	// doServerStreamPrimeDecompsitonRPC(client)
 
-	doClientStreamComputeAverageRPC(client)
+	// doClientStreamComputeAverageRPC(client)
+
+	doBiDiFindMaxRPC(client)
 
 }
 
@@ -120,5 +122,78 @@ func doClientStreamComputeAverageRPC(client calcpb.CalcServiceClient) {
 	}
 
 	log.Printf("Response from client Compute Average res: %v", res.GetResult())
+
+}
+
+func doBiDiFindMaxRPC(client calcpb.CalcServiceClient) {
+	fmt.Println("BiDi streaming request for Find Max rpc")
+
+	// get the client stream for request
+	stream, err := client.FindMaximum(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error while getting client stream for Find Maximun: %v \n", err)
+	}
+
+	requests := []*calcpb.FindMaximumRequest{
+		&calcpb.FindMaximumRequest{
+			Number: 5,
+		},
+		&calcpb.FindMaximumRequest{
+			Number: 3,
+		},
+		&calcpb.FindMaximumRequest{
+			Number: 6,
+		},
+		&calcpb.FindMaximumRequest{
+			Number: 1,
+		}, &calcpb.FindMaximumRequest{
+			Number: 9,
+		},
+		&calcpb.FindMaximumRequest{
+			Number: 18,
+		},
+		&calcpb.FindMaximumRequest{
+			Number: 4,
+		},
+	}
+
+	waitCh := make(chan struct{})
+
+	// send bunch of request to the server from client
+	go func() {
+		// sending request one by one in stream
+		for _, req := range requests {
+			log.Printf("Sending request: %v \n", req)
+			err := stream.Send(req)
+			if err != nil {
+				log.Fatalf("Error while sending request as stream: %v \n", err)
+			}
+			time.Sleep(1000 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+	// recieve multiple response from server
+	go func() {
+
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				// done with receiving res from the server
+				close(waitCh)
+			}
+			if err != nil {
+				log.Fatalf("Error while receiving the response from server in client: %v \n", err)
+				close(waitCh)
+			}
+
+			fmt.Printf("Receiving response from server : %v \n", res.GetResult())
+
+		}
+
+	}()
+
+	// block until done with the process.
+	<-waitCh
 
 }
