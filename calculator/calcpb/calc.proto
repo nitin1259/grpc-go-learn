@@ -40,6 +40,14 @@ message FindMaximumResponse{
     int64 result =1;
 }
 
+message SquareRootRequest{
+    int64 number =1;
+}
+
+message SquareRootResponse{
+    int64 result =1;
+}
+
 service CalcService {
     //Unary 
     rpc calculator(CalcRequest) returns (CalcResponse){}
@@ -53,6 +61,9 @@ service CalcService {
 
     // BiDi Streaming RPC
     rpc FindMaximum(stream FindMaximumRequest) returns (stream FindMaximumResponse){}
+
+    // unary rpc for error handling
+    rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse){} 
 }
 
 

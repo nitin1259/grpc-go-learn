@@ -1,17 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"time"
 
-import "google.golang.org/grpc"
-
-import "log"
-import "github.com/nitin1259/grpc-go-learn/calculator/calcpb"
-
-import "context"
-
-import "io"
-
-import "time"
+	"github.com/nitin1259/grpc-go-learn/calculator/calcpb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
 
 func main() {
 	fmt.Println("Starting the client main")
@@ -30,7 +30,9 @@ func main() {
 
 	// doClientStreamComputeAverageRPC(client)
 
-	doBiDiFindMaxRPC(client)
+	// doBiDiFindMaxRPC(client)
+
+	doUnaryErrorHandleRPC(client)
 
 }
 
@@ -196,4 +198,38 @@ func doBiDiFindMaxRPC(client calcpb.CalcServiceClient) {
 	// block until done with the process.
 	<-waitCh
 
+}
+
+func doUnaryErrorHandleRPC(client calcpb.CalcServiceClient) {
+	fmt.Println("Starting doUnaryErrorHandleRPC: ")
+
+	doUnaryForErr(client, -1)
+	doUnaryForErr(client, 9)
+
+}
+
+func doUnaryForErr(client calcpb.CalcServiceClient, num int64) {
+	req := &calcpb.SquareRootRequest{
+		Number: num,
+	}
+	res, err := client.SquareRoot(context.Background(), req)
+	if err != nil {
+		resErr, ok := status.FromError(err)
+		if ok {
+			//actual error from rpc(user defined)
+			fmt.Println(resErr.Code())
+			fmt.Println(resErr.Message())
+			fmt.Println(resErr.Details())
+			if resErr.Code() == codes.InvalidArgument {
+				fmt.Println("We probably sent negative number")
+				return
+			}
+		} else {
+			log.Fatalf("Big Error while doing Square Root of %v, err: %v", num, resErr)
+			return
+		}
+
+	}
+
+	fmt.Printf("Getting response from the server: %v \n", res.GetResult())
 }
