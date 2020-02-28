@@ -1,39 +1,45 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"time"
 
-import "google.golang.org/grpc"
-
-import "log"
-
-import "github.com/nitin1259/grpc-go-learn/greet/greetpb"
-
-import "context"
-
-import "io"
-
-import "time"
-
-import "google.golang.org/grpc/status"
-
-import "google.golang.org/grpc/codes"
+	"github.com/nitin1259/grpc-go-learn/greet/greetpb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
+)
 
 func main() {
 	fmt.Println("Welcome to grpc go client")
 
-	clientConn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	isTLSenable := true
+	opts := grpc.WithInsecure()
+	if isTLSenable {
+		certFile := "ssl/ca.crt"
+		creds, err := credentials.NewClientTLSFromFile(certFile, "")
+		if err != nil {
+			log.Fatalf("Error while creating TLS  %v", err)
+		}
+		opts = grpc.WithTransportCredentials(creds)
+	}
+	clientconn, err := grpc.Dial("localhost:50051", opts)
 
 	if err != nil {
-		log.Fatalf("unable to create connection: %v", err)
+		log.Fatalf("Error while creating client %v", err)
 	}
 
-	defer clientConn.Close()
+	defer clientconn.Close()
 
-	client := greetpb.NewGreetServiceClient(clientConn)
+	client := greetpb.NewGreetServiceClient(clientconn)
 
 	fmt.Printf("Created cleint %f \n", client)
 
-	// doUnary(client)
+	doUnary(client)
 
 	// doServerStreamingRPC(client)
 
@@ -41,7 +47,7 @@ func main() {
 
 	// doBiDiStreamingRPC(client)
 
-	doUnaryWithDeadLines(client)
+	// doUnaryWithDeadLines(client)
 }
 
 func doUnary(client greetpb.GreetServiceClient) {
